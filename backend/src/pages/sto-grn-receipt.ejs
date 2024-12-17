@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Genus Receipt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-print-css/css/bootstrap-print.min.css" media="print" />
+  <style>
+    .logo {
+      margin-top: 3rem;
+      margin-left: 2rem;
+    }
+  </style>
+</head>
+
+<%
+    const {
+        transaction,
+        convertIfDate,
+        rupeeAmountToWords,
+        parseAddressFromObject,
+        transactionIsCancelled,
+        referrerBase,
+        defaultLogoBuffer
+    } = dataForEJS
+  %>
+
+<% var { stock_ledgers } = transaction %>
+
+<%
+    stock_ledgers = stock_ledgers
+        ? stock_ledgers.map((item, tableItemIndex) => ({
+            ...item,
+            serialNumber: tableItemIndex + 1,
+            isSerialNumber: item.isSerialize ? 'Yes' : 'No'
+            }))
+        : [];
+  %>
+
+<body>
+  <div class="no-container-margin border">
+    <!-- Header -->
+    <div class="row">
+      <div class="col-sm-3">
+        <img class="logo" height="42px" src="<%= defaultLogoBuffer %>" alt="Logo" />
+      </div>
+
+      <div class="pdf-top-section-heading col-sm-6 d-flex align-items-center justify-content-center h-100">
+        <div class="row justify-content-center">
+          <div class="col-sm-12 d-flex justify-content-center">
+            <h1 class="pdf-h1 text-center"><%= transaction?.isMinBased ? transaction?.toOrganization?.name || 'N/A' : 'GENUS POWER INFRASTRUCTURES LIMITED' %></h1>
+          </div>
+          <div class="col-sm-12 d-flex justify-content-center">
+            <h2 class="pdf-h2 text-center">GSTIN: <%= transaction?.toStore?.gst_number || transaction?.toStore?.gstNumber || 'N/A' %></h2>
+          </div>
+          <div class="col-sm-12 d-flex justify-content-center">
+            <h3 class="pdf-h3 text-center"><u>GOODS RECEIVE NOTE (STO)</u><%- transactionIsCancelled(transaction) ? '&nbsp;(CANCELLED)' : '' %></h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-3 my-auto mt-2">
+        <dl class="m-0 align-items-center bordered-definitions-container">
+          <div class="custom-border">
+            <dt class="fw-bold my-1 pdf-dt" style="padding-left: 8px;">Document No:</dt>
+            <dd class="my-1 pdf-dd" style="word-wrap: anywhere; padding-left: 8px;"><%= transaction?.referenceDocumentNumber || 'N/A' %></dd>
+          </div>
+          <div class="custom-border">
+            <dt class="fw-bold my-1 pdf-dt" style="padding-left: 8px;">Document Date:</dt>
+            <dd class="my-1 pdf-dd" style="padding-left: 8px;"><%= convertIfDate(transaction.createdAt) || 'N/A' %></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="col-sm-12 mt-1 mt-3 mb-2">
+      <table class="table table-bordered table-condensed table-sm">
+        <tbody>
+          <tr>
+            <td><span class="fw-bold">Project: </span><%= transaction?.stock_ledgers?.[0]?.project?.name || 'N/A' %></td>
+          </tr>
+          <tr>
+            <td><span class="fw-bold">Company: </span><% let orgName = transaction?.stock_ledgers?.[0]?.organization_store?.organization?.name; %>
+              <%= orgName ? `${orgName}` : 'N/A' %></td>
+          </tr>
+          <tr>
+            <td><span class="fw-bold">Store Address: </span><%= parseAddressFromObject(transaction?.stock_ledgers?.[0]?.organization_store) || 'N/A' %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Supplier Details Table -->
+    <div class="col-sm-12 mt-3 mb-2">
+      <table class="table table-bordered table-sm">
+        <tbody>
+          <tr>
+            <td><span class="fw-bold">Supplier Name: </span><%= (transaction?.isMinBased ? transaction?.fromOrganization?.name : transaction?.fromOrganization?.name) || 'N/A' %></td>
+            <td><span class="fw-bold">Invoice/Challan No.: </span><%= transaction?.invoiceNumber || 'N/A' %></td>
+            <td><span class="fw-bold">E-Way Bill Number & Date: </span><%= transaction?.eWayBillNumber ? (transaction.eWayBillNumber + (transaction?.eWayBillDate ? ', Dt. ' + convertIfDate(transaction.eWayBillDate) : '')) : 'N/A' %></td>
+          </tr>
+          <tr>
+            <td><span class="fw-bold">Supplier Address: </span><%= parseAddressFromObject(transaction?.isMinBased ? transaction?.fromStore : transaction?.fromStore) || 'N/A' %></td>
+            <td><span class="fw-bold">Invoice/Challan Date: </span><%= convertIfDate(transaction?.invoiceDate) || 'N/A' %></td>
+            <td><span class="fw-bold">L.R Bill No.: </span><%= transaction?.lrNumber || 'N/A' %></td>
+          </tr>
+          <tr>
+            <td><span class="fw-bold">Transporter's Name: </span><%= transaction?.transporterName || 'N/A' %></td>
+            <td><span class="fw-bold">Transporter's Contact Number: </span><%= transaction?.transporterContactNumber || 'N/A' %></td>
+            <td><span class="fw-bold">Vehicle No: </span><%= transaction?.vehicleNumber || 'N/A' %></td>
+          </tr>
+          <tr>
+            <td><span class="fw-bold">Actual Date of Receipt: </span><%= convertIfDate(transaction?.actualReceiptDate) || 'N/A' %></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="col-sm-12 mt-3">
+      <table class="table table-bordered table-condensed table-extra-condensed table-sm">
+        <thead>
+          <tr>
+            <th scope="col">Sr. No.</th>
+            <th scope="col">Material Description</th>
+            <th scope="col">Code</th>
+            <th scope="col">HSN Code</th>
+            <th scope="col">UOM</th>
+            <th scope="col">Qty</th>
+            <th scope="col">Rate</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for (let i = 0; i < stock_ledgers.length; i++) { %>
+          <tr>
+            <td><%= stock_ledgers[i].serialNumber %></td>
+            <td><%= stock_ledgers[i]?.material?.name %></td>
+            <td><%= stock_ledgers[i]?.material?.code %></td>
+            <td><%= stock_ledgers[i]?.material?.hsnCode %></td>
+            <td><%= stock_ledgers[i]?.uom?.name %></td>
+            <td><%= stock_ledgers[i].quantity %></td>
+            <td><%= parseFloat(stock_ledgers[i].rate).toFixed(2) %></td>
+            <td><%= parseFloat(stock_ledgers[i].value).toFixed(2) %></td>
+            <% if (i === 0) { %>
+            <td style="vertical-align:middle;" rowspan="<%= stock_ledgers.length %>"><%= transaction?.remarks %></td>
+            <% } else { %>
+            <td class="d-none"></td>
+            <% } %>
+          </tr>
+          <% } %>
+          <tr>
+            <td colspan="7">Total Value</td>
+            <td><%= transaction?.sumOfNegativeAmounts %></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="9"><span class="amount-in-words-span">Amount In Words</span><%= rupeeAmountToWords(parseFloat(transaction?.sumOfNegativeAmounts).toFixed(2)) %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Signature Blocks -->
+    <div class="row horizontal-bordered-blocks-container">
+      <div class="col-sm-4">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center">Store Incharge</small>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center">Commercial/Accountant Executive</small>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center">Project Manager</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acknowledgement Message -->
+    <div class="row mt-4">
+      <div class="col">
+        <p class="pdf-p custom-border p-2">The material(s) listed above has/have been received in the store.</p>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

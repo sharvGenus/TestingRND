@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "232546926422",
+    "project_id": "genus-wfm-ee6be",
+    "storage_bucket": "genus-wfm-ee6be.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232546926422:android:e749b8e0e5f492afc9e0f7",
+        "android_client_info": {
+          "package_name": "com.genuswfm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAO27kBNv-yfl_1uLyY7ENlwpfoiwaECWw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

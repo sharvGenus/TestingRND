@@ -1,0 +1,50 @@
+name: Review Pull Requests  
+
+on:  
+  pull_request:  
+    types:  
+      - opened  
+      - synchronize  
+      - reopened
+    branches: ["development"]
+    paths-ignore:
+      - frontend/build/**
+      - frontend/.gitignore
+      - frontend/README.md
+      - frontend/yarn-lock.json
+      - mobileApp/__tests__/**
+      - mobileApp/.bundle/**
+      - mobileApp/android/**
+      - mobileApp/ios/**
+      - mobileApp/patches/**
+      - mobileApp/Gemfile*
+      - mobileApp/Gemfile
+      - mobileApp/Gemfile
+      - .gitignore
+    pull_request_review_comment:
+      types: [created]
+  
+jobs:  
+  review_pulls:  
+    runs-on: ubuntu-latest  
+    steps:  
+      - name: Checkout repository  
+        uses: actions/checkout@v3  
+        
+      - name: Set up Python 3.11.6
+        uses: actions/setup-python@v4  
+        with:  
+          python-version: '3.11.6'  
+  
+      - name: Install dependencies  
+        run: pip install requests openai==0.28.1
+  
+      - name: Review pull requests  
+        run: python review_prs.py  
+        env:  
+          AZURE_ENDPOINT: ${{ secrets.AZURE_ENDPOINT }}  
+          AZURE_API_KEY: ${{ secrets.AZURE_API_KEY }} 
+          AZURE_API_BASE: ${{ secrets.AZURE_API_BASE }}
+          AZURE_API_VERSION: ${{ secrets.AZURE_API_VERSION }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          PR_NUMBER: ${{ github.event.pull_request.number }}

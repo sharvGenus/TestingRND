@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Genus Receipt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-print-css/css/bootstrap-print.min.css" media="print" />
+</head>
+
+<%
+    const { transaction, parseAddressFromObject, getGstNumberFrom, convertIfDate, formatIndianNumber, rupeeAmountToWords, getApprovedQuantity, parentOrganizationFetchers, getLogoBufferFrom } = dataForEJS;
+
+    const logoForDisplay = getLogoBufferFrom(parentOrganizationFetchers.getImmediateParentOrganization(transaction?.fromStore))
+
+%>
+
+<body>
+  <div class="col-sm-12 d-flex align-items-center justify-content-center">
+    <h3>GENUS POWER INFRASTRUCTURES LIMITED</h3>
+  </div>
+
+  <div class="no-container-margin custom-border">
+    <div class="row">
+      <div class="col-sm-12 mt-3">
+        <div class="custom-border py-2 px-1">
+          <div class="row">
+            <% if(logoForDisplay) { %>
+            <div class="col-sm-2">
+              <img class="logo" height="49px" src="<%= logoForDisplay %>" alt="Logo" />
+            </div>
+            <% } %>
+            <div class="<%= logoForDisplay ? 'col-sm-10' : 'col-sm-12' %> d-grid justify-content-center align-items-center">
+              <div class="w-100 d-flex justify-content-center align-items-center">
+                <h5>
+                  <%= parseAddressFromObject(transaction?.fromStore) %>
+                </h5>
+              </div>
+              <div class="w-100 d-flex justify-content-center align-items-center">
+                <% let gstIn = getGstNumberFrom(transaction?.fromStore); %>
+                <h5>
+                  <%= gstIn ? `GSTIN: ${getGstNumberFrom(transaction?.fromStore)}` : '' %>
+                </h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-12 mb-3" style="margin-top: -2px;">
+      <div>
+        <div class="custom-border">
+          <div class="d-flex justify-content-center align-items-center">
+            <h4>Material Consumption Note</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-12 mt-1 mb-2">
+      <table class="table table-bordered">
+        <tbody>
+          <tr>
+            <td><span class="fw-bold">Project Name:</span> <span><%= transaction?.stock_ledgers?.[0].project?.name || 'N/A' %></span></td>
+            <td><span class="fw-bold">Document No:</span> <span><%= transaction?.referenceDocumentNumber || 'N/A' %></span></td>
+          </tr>
+          <tr>
+            <td><span class="fw-bold">Organziation Store:</span> <span><%= transaction?.fromStore?.name || 'N/A' %></span></td>
+            <td><span class="fw-bold">Document Date:</span> <span><%= convertIfDate(transaction?.createdAt, true) %></span></td>
+          </tr>
+          <tr>
+            <td><span class="fw-bold">Request No:</span> <span><%= transaction?.requestNumber || 'N/A' %></span></td>
+            <td><span class="fw-bold">Organization Name:</span> <span><%= parentOrganizationFetchers.getImmediateParentOrganization(transaction?.fromStore)?.name %></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="col-sm-12 mt-3">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">Sr. No.</th>
+            <th scope="col">Material Description</th>
+            <th scope="col">Code</th>
+            <th scope="col">UOM</th>
+            <th scope="col">Issued Qty</th>
+            <th scope="col">Consumed Qty</th>
+            <th scope="col">Rate</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for (let i = 0; i < transaction?.stock_ledgers?.length; i++) { %>
+          <% const { material: { id: materialId, name: materialName, code, hsnCode }, uom: { name: uomName }, quantity, rate, value } = transaction.stock_ledgers[i]; %>
+          <tr>
+            <td><%= i + 1 %></td>
+            <td><%= materialName %></td>
+            <td><%= code %></td>
+            <td><%= uomName %></td>
+            <td><%= getApprovedQuantity(materialId) %></td>
+            <td><%= Math.abs(quantity) %></td>
+            <td><%= parseFloat(rate).toFixed(2) %></td>
+            <td><%= formatIndianNumber(parseFloat(value).toFixed(2)) %></td>
+          </tr>
+          <% } %>
+          <tr>
+            <td colspan="7">Total</td>
+            <td><%= formatIndianNumber(parseFloat(transaction?.sumOfNegativeAmounts).toFixed(2)) %></td>
+          </tr>
+          <tr>
+            <td colspan="8"><span class="amount-in-words-span">Amount In Words</span><%= rupeeAmountToWords(parseFloat(transaction?.sumOfNegativeAmounts).toFixed(2)) %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row horizontal-bordered-blocks-container mt-4 mb-3">
+      <div class="col-sm-3 no-padding">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Approved By Site Engineer</small>
+        </div>
+      </div>
+      <div class="col-sm-3 no-padding">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Approved By Project Manager</small>
+        </div>
+      </div>
+      <div class="col-sm-3 no-padding">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Store Incharge</small>
+        </div>
+      </div>
+      <div class="col-sm-3 no-padding">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Sub Contractor's Signature With Seal</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

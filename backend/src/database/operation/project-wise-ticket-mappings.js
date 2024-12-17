@@ -1,0 +1,60 @@
+const config = require("../../config/database-schema");
+const { PROJECT_WISE_TICKET_MAPPINGS } = require("../../config/database-schema");
+const { Base } = require("./base");
+
+/**
+ * Represents a database tables object with various properties and functionalities.
+ *
+ * This class provides the methods for database create, update, delete, get count and others for project-wise-ticket-mappings table
+ *
+ * created by               version                         date
+ * Ruhana                  1.0.0                           30 Oct 2023
+ *
+ * updated by               version                         date
+ *
+ * @class Tickets
+ */
+class projectWiseTicketMappings extends Base {
+
+    constructor(requestQuery) {
+        super(requestQuery);
+        this.modelName = PROJECT_WISE_TICKET_MAPPINGS;
+        this.initialiseModel();
+        this.fields = {
+            id: "id",
+            projectId: "project_id",
+            issueFields: "issue_fields",
+            forms: "forms",
+            ticketIndex: "ticket_index",
+            prefix: "prefix",
+            isActive: "is_active",
+            remarks: "remarks",
+            createdBy: "created_by",
+            updatedBy: "updated_by",
+            createdAt: "created_at",
+            updatedAt: "updated_at"
+        };
+        this.fieldsList = Object.keys(this.fields);
+        this.relations = [
+            {
+                model: this.db[config.PROJECTS],
+                attributes: ["id", "name"],
+                foreignKey: "project_id"
+            },
+            {
+                model: this.db[config.USERS],
+                attributes: ["id", "name"],
+                foreignKey: "created_by",
+                as: "created"
+            },
+            {
+                model: this.db[config.USERS],
+                attributes: ["id", "name"],
+                foreignKey: "updated_by",
+                as: "updated"
+            }
+        ];
+    }
+}
+
+module.exports = projectWiseTicketMappings;

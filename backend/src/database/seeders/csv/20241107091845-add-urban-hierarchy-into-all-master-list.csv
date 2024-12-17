@@ -1,0 +1,5 @@
+ea926d43-4b5f-4667-b306-865467346bb5,,Rural & Urban,true,2023-09-06 12:56:40.300438+05:30,2023-09-06 12:56:40.300438+05:30,,2,654fb67d-edbc-4d7e-9848-dc41676cfc23,false,false,
+c8b1bd5c-796d-4146-b318-23541d6d2e52,urban_hierarchies,Urban Level,true,2024-11-07 13:36:00.782591+05:30,2024-11-07 13:36:00.782591+05:30,654fb67d-edbc-4d7e-9848-dc41676cfc23,1,ea926d43-4b5f-4667-b306-865467346bb5,true,false,/urban-master
+511cf1bf-bf0a-40d4-8497-5b8a536acc31,urban_level_entries,Urban Level Entry,true,2024-11-07 13:36:00.782591+05:30,2024-11-07 13:36:00.782591+05:30,654fb67d-edbc-4d7e-9848-dc41676cfc23,2,ea926d43-4b5f-4667-b306-865467346bb5,true,false,/urban-level-entry-master
+bd21c7a2-c96c-4e00-acdc-d993235ddc07,urban_hierarchies,Rural Level,true,2024-11-07 13:36:00.782591+05:30,2024-11-07 13:36:00.782591+05:30,654fb67d-edbc-4d7e-9848-dc41676cfc23,3,ea926d43-4b5f-4667-b306-865467346bb5,true,false,/urban-master
+2e8f3a8e-d816-45dd-bd97-dfc3a949ee02,urban_level_entries,Rural Level Entry,true,2024-11-07 13:36:00.782591+05:30,2024-11-07 13:36:00.782591+05:30,654fb67d-edbc-4d7e-9848-dc41676cfc23,4,ea926d43-4b5f-4667-b306-865467346bb5,true,false,/urban-level-entry-master

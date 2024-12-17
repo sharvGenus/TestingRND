@@ -1,0 +1,11 @@
+yarn.lock
+node_modules
+package-lock.json
+.idea
+.idea/
+.vscode
+backups/attachment_dump
+backups/postgres_dump
+ssl-certs
+metabase-data
+backend/exportedFiles

@@ -1,0 +1,1 @@
+<%23> {{HASHCODE}} {{OTP}} is your one-time password for login - Genus

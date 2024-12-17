@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Genus Receipt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-print-css/css/bootstrap-print.min.css" media="print" />
+  <style>
+    .logo {
+      margin-top: 40px;
+      margin-left: 30px;
+      height: 42px;
+    }
+  </style>
+</head>
+
+<!-- Extension used to format: "EJS Beautify" by "j69" on VS Code Marketplace -->
+
+<%
+    const {
+        convertIfDate,
+        referrerBase,
+        parseAddressFromObject,
+        formatIndianNumber,
+        getGstNumberFrom,
+        transactionIsCancelled,
+        getLogoBufferFrom,
+        rupeeAmountToWords,
+        transaction,
+        defaultLogoBuffer
+    } = dataForEJS
+  %>
+
+<% var { stock_ledgers: materialData, sumOfAmounts, correspondingMinTransaction } = transaction; %>
+
+<%
+    materialData = materialData
+        ? materialData.map((item, tableItemIndex) => ({
+            ...item,
+            serialNumber: tableItemIndex + 1,
+            isSerialNumber: item.isSerialize ? 'Yes' : 'No'
+            }))
+        : [];
+
+    const isMinBased = transaction?.isMinBased;
+    const logoForDisplay = transaction?.isMinBased ? getLogoBufferFrom(transaction?.toOrganization) : undefined;
+  %>
+
+<body>
+  <div class="no-container-margin custom-border">
+    <div class="row">
+      <div class="col-sm-3">
+        <% if (isMinBased) { %>
+        <% if (logoForDisplay) { %>
+        <img class="logo" height="42px" src="<%= logoForDisplay %>" alt="Logo" />
+        <% } %>
+        <% } else { %>
+        <img class="logo" height="42px" src="<%= defaultLogoBuffer %>" alt="Logo" />
+        <% } %>
+      </div>
+      <div class="pdf-top-section-heading col-sm-6 d-flex align-items-center justify-content-center h-100">
+        <div class="row justify-content-center">
+          <div class="col-sm-12 d-flex justify-content-center">
+            <h1 class="pdf-h1 text-center"><%= transaction?.isMinBased ? transaction?.toOrganization?.name || 'N/A' : 'GENUS POWER INFRASTRUCTURES LIMITED' %></h1>
+          </div>
+          <div class="col-sm-12 d-flex justify-content-center">
+            <h2 class="pdf-h2 text-center">GSTIN: <%= transaction?.toStore?.gst_number || transaction?.toStore?.gstNumber || 'N/A' %></h2>
+          </div>
+          <div class="col-sm-12 d-flex justify-content-center">
+            <h3 class="pdf-h3 text-center"><u>GOODS RECEIVE NOTE</u><span><%- transactionIsCancelled(transaction) ? '&nbsp;(CANCELLED)' : '' %></span></h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-3 my-auto mt-2">
+        <dl class="m-0 align-items-center bordered-definitions-container">
+          <div class="custom-border">
+            <dt class="fw-bold my-1 pdf-dt" style="padding-left: 8px;">Document No:</dt>
+            <dd class="my-1 pdf-dd" style="word-wrap: anywhere; padding-left: 8px;"><%= transaction?.referenceDocumentNumber || 'N/A' %></dd>
+          </div>
+          <div class="custom-border">
+            <dt class="fw-bold my-1 pdf-dt" style="padding-left: 8px;">Document Date:</dt>
+            <dd class="my-1 pdf-dd" style="padding-left: 8px;"><%= convertIfDate(transaction.createdAt) || 'N/A' %></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="col-sm-12 mt-1 mt-3 mb-2">
+      <table class="table table-bordered table-condensed table-sm">
+        <tbody>
+          <tr>
+            <td><span class="fw-bold">Project: </span><%= transaction?.toProject?.name || 'N/A' %></td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <span class="fw-bold">Store Address: </span>
+              <%= transaction?.toStore?.organization?.name || 'N/A' %>,
+              <%= parseAddressFromObject(transaction?.toStore) %>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-sm-12 mt-3 mb-2">
+      <table class="table table-bordered table-sm">
+        <tbody>
+          <% if (!transaction?.isMinBased) { %>
+          <tr>
+            <td>
+              <span class="fw-bold">Supplier Name: </span>
+              <span class="pdf-div-text"><%= (transaction?.isMinBased ? transaction?.fromOrganization?.name : transaction?.toOrganization?.name) || 'N/A' %></span>
+            </td>
+            <td>
+              <div>
+                <span class="fw-bold">Supplier Address: </span>
+                <span class="pdf-div-text"><%= parseAddressFromObject(transaction?.isMinBased ? transaction?.fromStore : transaction?.toOrganization) || 'N/A' %></span>
+              </div>
+              <div>
+                <span class="fw-bold">GSTIN: </span>
+                <span class="pdf-div-text"><%= getGstNumberFrom(transaction?.isMinBased ? transaction?.fromStore : transaction?.toOrganization) || 'N/A' %></span>
+              </div>
+            </td>
+            <td>
+              <span class="fw-bold">E-Way Bill Number & Date: </span>
+              <span class="pdf-div-text"><%= transaction?.eWayBillNumber ? `${transaction?.eWayBillNumber} & ${transaction?.eWayBillDate ? convertIfDate(transaction?.eWayBillDate) : ''}` : 'N/A' %></span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="fw-bold"><%= transaction?.isMinBased ? 'Work Order No.: ' : 'P.O. No.: ' %></span>
+              <span class="pdf-div-text text-left"><%= transaction?.poNumber || 'N/A' %></span>
+            </td>
+            <td>
+              <span class="fw-bold"><%= transaction?.isMinBased ? 'Work Order Date: ' : 'P.O. Date: ' %></span>
+              <span class="pdf-div-text"><%= convertIfDate(transaction?.poDate) || 'N/A' %></span>
+            </td>
+            <td>
+              <span class="fw-bold">Transporter's Name: </span>
+              <span class="pdf-div-text"><%= transaction?.transporterName || 'N/A' %></span>
+            </td>
+          </tr>
+          <tr>
+            <td> <span class="fw-bold">Invoice/Challan No.: </span>
+              <span class="pdf-div-text"><%= (isMinBased ? correspondingMinTransaction?.referenceDocumentNumber : transaction?.invoiceNumber) || 'N/A' %></span>
+            </td>
+            <td> <span class="fw-bold">Invoice/Challan Date: </span>
+              <span class="pdf-div-text"><%= convertIfDate(isMinBased ? correspondingMinTransaction?.createdAt : transaction?.invoiceDate) || 'N/A' %></span>
+            </td>
+            <td>
+              <span class="fw-bold">Actual Date of Receipt: </span>
+              <span class="pdf-div-text"><%= convertIfDate(transaction?.actualReceiptDate) || 'N/A' %></span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="fw-bold">Vehicle No: </span>
+              <span class="pdf-div-text"><%= transaction?.vehicleNumber || 'N/A' %></span>
+            </td>
+            <td>
+              <span class="fw-bold">L.R. No.: </span>
+              <span class="pdf-div-text"><%= transaction?.lrNumber || 'N/A' %></span>
+            </td>
+            <td></td>
+          </tr>
+          <% } else { %>
+          <tr>
+            <td>
+              <span class="fw-bold">Supplier Name: </span>
+              <span class="pdf-div-text"><%= (transaction?.isMinBased ? transaction?.fromOrganization?.name : transaction?.toOrganization?.name) || 'N/A' %></span>
+            </td>
+            <td>
+              <div>
+                <span class="fw-bold">Supplier Address: </span>
+                <span class="pdf-div-text"><%= parseAddressFromObject(transaction?.isMinBased ? transaction?.fromStore : transaction?.toOrganization) || 'N/A' %></span>
+              </div>
+              <div>
+                <span class="fw-bold">GSTIN: </span>
+                <span class="pdf-div-text"><%= getGstNumberFrom(transaction?.isMinBased ? transaction?.fromStore : transaction?.toOrganization) || 'N/A' %></span>
+              </div>
+            </td>
+            <td>
+              <span class="fw-bold">E-Way Bill Number & Date: </span>
+              <span class="pdf-div-text"><%= transaction?.eWayBillNumber ? `${transaction?.eWayBillNumber} & ${transaction?.eWayBillDate ? convertIfDate(transaction?.eWayBillDate) : ''}` : 'N/A' %></span>
+            </td>
+          </tr>
+          <tr>
+            <td> <span class="fw-bold">Invoice/Challan No.: </span>
+              <span class="pdf-div-text"><%= (isMinBased ? correspondingMinTransaction?.referenceDocumentNumber : transaction?.invoiceNumber) || 'N/A' %></span>
+            </td>
+            <td> <span class="fw-bold">Invoice/Challan Date: </span>
+              <span class="pdf-div-text"><%= convertIfDate(isMinBased ? correspondingMinTransaction?.createdAt : transaction?.invoiceDate) || 'N/A' %></span>
+            </td>
+            <td>
+              <span class="fw-bold">Actual Date of Receipt: </span>
+              <span class="pdf-div-text"><%= convertIfDate(transaction?.correspondingMinTransaction?.createdAt) || 'N/A' %></span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="fw-bold"><%= transaction?.isMinBased ? 'Work Order No.: ' : 'P.O. No.: ' %></span>
+              <span class="pdf-div-text text-left"><%= transaction?.poNumber || 'N/A' %></span>
+            </td>
+            <td>
+              <span class="fw-bold">Vehicle No: </span>
+              <span class="pdf-div-text"><%= transaction?.vehicleNumber || 'N/A' %></span>
+            </td>
+            <td></td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-sm-12 mt-3">
+      <table class="table table-bordered table-condensed table-extra-condensed table-sm">
+        <thead>
+          <tr>
+            <th scope="col pdf-p">Sr. No.</th>
+            <th scope="col pdf-p">Material Description</th>
+            <th scope="col pdf-p">Code</th>
+            <th scope="col pdf-p">HSN Code</th>
+            <th scope="col pdf-p">UOM</th>
+            <th scope="col pdf-p">Qty</th>
+            <th scope="col pdf-p">Rate</th>
+            <th scope="col pdf-p">Value</th>
+            <th scope="col pdf-p">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for (let i = 0; i < materialData.length; i++) { %>
+          <% const { serialNumber, material: { name: materialName, code, hsnCode }, uom: { name: uomName }, quantity, rate, value } = materialData[i]; %>
+          <tr>
+            <td><%= serialNumber %></td>
+            <td><%= materialName %></td>
+            <td><%= code %></td>
+            <td><%= hsnCode %></td>
+            <td><%= uomName %></td>
+            <td><%= quantity %></td>
+            <td><%= parseFloat(rate).toFixed(2) %></td>
+            <td><%= formatIndianNumber(parseFloat(value).toFixed(2)) %></td>
+            <% if (i === 0) { %>
+            <td style="vertical-align:middle;" rowspan="<%= materialData.length %>"><%= transaction?.remarks %></td>
+            <% } else { %>
+            <td class="d-none"></td>
+            <% } %>
+          </tr>
+          <% } %>
+          <tr>
+            <td colspan="7">Total</td>
+            <td><%= formatIndianNumber(parseFloat(sumOfAmounts).toFixed(2)) %></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="9"><span class="amount-in-words-span">Amount In Words</span><%= rupeeAmountToWords(parseFloat(sumOfAmounts).toFixed(2)) %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row horizontal-bordered-blocks-container mt-4">
+      <div class="<%= isMinBased ? 'col-sm-12' : 'col-sm-3' %> no-padding">
+        <div <%- isMinBased ? 'style="margin-right: 12px;"' : '' %> class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Store Incharge</small>
+        </div>
+      </div>
+      <% if (!isMinBased) { %>
+      <div class="col-sm-2 no-padding">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Quality Engineer</small>
+        </div>
+      </div>
+      <div class="col-sm-4 no-padding">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Commercial/Accountant Executive</small>
+        </div>
+      </div>
+      <div class="col-sm-3 no-padding">
+        <div class="signature-block">
+          <small class="d-flex justify-content-center pdf-small">Project Manager</small>
+        </div>
+      </div>
+      <% } else { %>
+      <div></div>
+      <% } %>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col">
+        <p class="pdf-p custom-border p-2">The material(s) listed above has/have been received in the store.</p>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

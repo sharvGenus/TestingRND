@@ -1,0 +1,33 @@
+name: ReactJS Build
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches: [ "staging" ]
+    paths:
+      - frontend/**
+jobs:
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}   
+
+    - name: Build
+      run: |
+        git config --local user.email "harishchandra.sharma@habilelabs.io"
+        git config --local user.name "harish"
+        cd frontend
+        yarn run build:commit
+        git push origin HEAD:staging

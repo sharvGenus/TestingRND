@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgenus_power=self.webpackChunkgenus_power||[]).push([[4208],{94208:(e,n,s)=>{s.r(n),s.d(n,{default:()=>r});var t=s(4139),h=s(44414);const r=()=>(0,h.jsx)(t.Ay,{container:!0,alignItems:"center",justifyContent:"center",height:"75vh",children:(0,h.jsx)("img",{src:"/genus-logo.png",alt:"Genus",width:"500px",height:"220px"})})}}]);
